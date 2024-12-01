@@ -1,0 +1,4 @@
+- source: day1.qmd
+  quarto-pub:
+    - id: df30335a-7b87-4bcd-8f90-49ca29378a44
+      url: https://eli.quarto.pub/day-1

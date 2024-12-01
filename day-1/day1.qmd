@@ -1,0 +1,64 @@
+---
+title: "Day 1"
+author: "Eli Miller"
+date: "2024-12-01"
+format: html
+---
+
+
+## Part 1
+```{r part_1testing}
+# Test Source
+left <- c(3,4,2,1,3,3)
+right <- c(4,3,5,3,9,3)
+
+abs(sum(sort(left) - sort(right)))
+```
+
+1. Sort each list 
+2. Take the absolute difference between the two lists
+3. Sum the differences
+```{r part1}
+input <- read.fwf("day1-input.txt", widths = c(5, 3, 5), col.names = c("left", "space", "right"))
+run_time <- system.time({
+  answer <- sum(
+      abs(
+        sort(input[["left"]]) - sort(input[["right"]])
+      )
+    )
+  })
+
+answer
+
+run_time
+```
+
+The answer is `r answer` and it took `r run_time[3]` seconds to calculate.
+
+## Part 2
+
+```{r part2_testing}
+library(purrr)
+
+sim_score <- map_int(left, ~ sum(right %in% .))
+
+sum(sim_score * left)
+```
+
+1. Iterate over the left list and sum the number of times each element appears in the right list
+2. Sum the `sim_score` multiplied by the left list
+
+```{r part2}
+
+sim_score <- map_int(input[["left"]], ~ sum(input[["right"]] %in% .))
+
+run_time <- system.time({
+  answer <- sum(sim_score * input[["left"]])
+})
+
+answer
+
+run_time
+```
+
+The answer is `r answer` and it took `r run_time[3]` seconds to calculate.

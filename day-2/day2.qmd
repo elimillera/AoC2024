@@ -1,0 +1,93 @@
+---
+title: "Day 2"
+author: "Eli Miller"
+date: "2024-12-02"
+format: html
+---
+
+
+```{r part1_test}
+library(dplyr)
+test_data <- list(
+  c(7, 6, 4, 2, 1),
+  c(1, 2, 7, 8, 9),
+  c(9, 7, 6, 2, 1),
+  c(1, 3, 2, 4, 5),
+  c(8, 6, 4, 4, 1),
+  c(1, 3, 6, 7, 9)
+)
+
+is_safe <- map_lgl(test_data, function(x){
+
+  change <- x - lead(x)
+  change <- change[!is.na(change)]
+
+  if (length(unique(sign(change))) != 1)
+    return(FALSE)
+
+  if (any(abs(change) > 3))
+    return(FALSE)
+
+  return(TRUE)
+})
+```
+
+```{r part1}
+library(stringr)
+input_data <- readLines("day2-input.txt") %>%
+  str_split(" ")
+
+run_time <- system.time({
+  is_safe <- map_lgl(input_data, function(x){
+    x <- as.numeric(x)
+
+    change <- x - lead(x)
+    change <- change[!is.na(change)]
+
+    if (length(unique(sign(change))) != 1)
+      return(FALSE)
+
+    if (any(abs(change) > 3))
+      return(FALSE)
+
+    return(TRUE)
+  })
+})
+
+sum(is_safe)
+
+run_time
+```
+
+```{r part2}
+
+run_time <- system.time({
+  is_safe <- map_lgl(input_data, function(x){
+    x <- as.numeric(x)
+
+    change <- x - lead(x)
+    change <- change[!is.na(change)]
+
+    if (!(length(unique(sign(change))) != 1 || any(abs(change) > 3))){
+      return(TRUE)
+    }
+
+    for (i in 1:length(x)){
+      y <- x[-i]
+
+      change <- y - lead(y)
+      change <- change[!is.na(change)]
+
+      if (!(length(unique(sign(change))) != 1 || any(abs(change) > 3))){
+        return(TRUE)
+      }
+    }
+    return(FALSE)
+  })
+})
+
+sum(is_safe)
+
+run_time
+
+```

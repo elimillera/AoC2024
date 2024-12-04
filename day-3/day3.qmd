@@ -1,0 +1,119 @@
+---
+title: "Day 3"
+author: "Eli Miller"
+date: "2024-12-03"
+format: html
+---
+
+
+```{r part1_test}
+library(rlang)
+library(purrr)
+
+mul <- function(x, y){
+  return(x * y)
+}
+
+pattern <- "mul\\(\\d+,\\d+\\)"
+
+
+test_input <- "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"
+
+matches <- gregexpr(pattern, test_input)
+
+the_sum <- map(regmatches(test_input, matches)[[1]], ~parse_expr(.x)) %>%
+  map_int(eval) %>%
+  sum()
+
+```
+
+```{r part1}
+input_data <- readLines("day3-input.txt") %>%
+  paste0(collapse = "")
+
+matches <- gregexpr(pattern, input_data)
+the_sum <- map(regmatches(input_data, matches)[[1]], ~parse_expr(.x)) %>%
+  map_int(eval) %>%
+  sum()
+```
+
+```{r part2_test}
+test_input <- "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"
+pattern_dont <- "don't\\(\\)"
+pattern_do <- "do\\(\\)"
+matches_dont <- unlist(gregexpr(pattern_dont, test_input))
+matches_do <- unlist(gregexpr(pattern_do, test_input))
+matches_mul <- unlist(gregexpr(pattern, test_input))
+dont_i <- matches_dont[[1]]
+
+disregard_flags <- data.frame(start = matches_dont)
+disregard_range <- c()
+
+while (TRUE) {
+  disregard_flags[nrow(disregard_flags), "stop"] <- matches_do[[matches_do > disregard_flags]][1]-1
+  if (!any(matches_dont >= max(disregard_flags))){
+    if(max(matches_dont) > max(matches_do)) {
+      disregard_range <- c(disregard_range, disregard_flags[nrow(disregard_flags), "start"]:nchar(test_input))
+      break
+    } else {
+      disregard_range <- c(disregard_range, disregard_flags[nrow(disregard_flags), "start"]:min(matches_do[matches_do > matches_dont]))
+    }
+    break
+  } 
+  disregard_flags[nrow(disregard_flags)+1, "start"] <- matches_dont[[matches_dont >= disregard_flags]][1]
+  disregard_range <- c(disregard_range, disregard_flags[nrow(disregard_flags), "start"]:disregard_flags[nrow(disregard_flags), "stop"])
+}
+
+matches <- gregexpr(pattern, test_input)
+match_lengths <- attr(matches[[1]], "match.length")
+dont_matches <- map_lgl(matches[[1]], ~!. %in% disregard_range)
+
+matches[[1]] <- matches[[1]][dont_matches]
+attr(matches[[1]], "match.length") <- match_lengths[dont_matches]
+
+map(regmatches(test_input, matches)[[1]], ~parse_expr(.x)) %>%
+  map_int(eval) %>%
+  sum()
+
+```
+
+```{r part2}
+input_data <- readLines("day3-input.txt") %>%
+  paste0(collapse = "")
+pattern_dont <- "don't\\(\\)"
+pattern_do <- "do\\(\\)"
+matches_dont <- unlist(gregexpr(pattern_dont, input_data))
+matches_do <- unlist(gregexpr(pattern_do, input_data))
+matches_mul <- unlist(gregexpr(pattern, input_data))
+dont_i <- matches_dont[[1]]
+
+disregard_flags <- data.frame(start = dont_i)
+disregard_range <- c()
+
+while (TRUE) {
+  disregard_flags[nrow(disregard_flags), "stop"] <- matches_do[matches_do > disregard_flags[nrow(disregard_flags), "start"]][1]
+  if (!any(matches_dont >= max(disregard_flags))){
+    if(max(matches_dont) > max(matches_do)) {
+      disregard_range <- c(disregard_range, disregard_flags[nrow(disregard_flags), "start"]:nchar(input_data))
+    } else {
+      print('here')
+      disregard_range <- c(disregard_range, disregard_flags[nrow(disregard_flags), "start"]:min(matches_do[matches_do > max(matches_dont)]))
+    }
+    break
+  } 
+  disregard_range <- c(disregard_range, disregard_flags[nrow(disregard_flags), "start"]:disregard_flags[nrow(disregard_flags), "stop"])
+  disregard_flags[nrow(disregard_flags)+1, "start"] <- matches_dont[matches_dont >= disregard_flags[nrow(disregard_flags), "stop"]][1]
+}
+
+matches <- gregexpr(pattern, input_data)
+match_lengths <- attr(matches[[1]], "match.length")
+dont_matches <- map_lgl(matches[[1]], ~!. %in% disregard_range)
+
+matches[[1]] <- matches[[1]][dont_matches]
+attr(matches[[1]], "match.length") <- match_lengths[dont_matches]
+
+map(regmatches(input_data, matches)[[1]], ~parse_expr(.x)) %>%
+  map_int(eval) %>%
+  sum()
+
+```
